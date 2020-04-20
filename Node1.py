@@ -2,6 +2,8 @@ import socket       # For TCP connections
 from _thread import start_new_thread
 import threading    # For handling communication with multiple nodes
 from concurrent.futures import ThreadPoolExecutor
+import random
+import time
 
 node_to_port = {"Node1": 8001, "Node2": 8002, "Node3": 8003, "Node4": 8004, "Node5": 8005, "Node6": 8006, "Node7": 8007, }
 ip_addr = "127.0.0.1"
@@ -28,9 +30,6 @@ def node_recv(conn,rip,rport):
     out_lock.release()
     data_received.append(data)
     conn.close()
-        
-
-
 
 def recv():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,16 +49,22 @@ def node_send(node, msg, mode):
     port = node_to_port[node]
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((ip_addr,port))
-    if mode == "FIFO":
-        sock.sendall(msg.encode())
-        # while True:
-        #     ack = sock.recv(1024)
-        #     if not ack:
-        #         break
-        print("Acknowledgement received from",ip_addr,":",port)
+    # if mode == "FIFO":
+    #     sock.sendall(msg.encode())
+    #     # while True:
+    #     #     ack = sock.recv(1024)
+    #     #     if not ack:
+    #     #         break
+    #     print("Acknowledgement received from",ip_addr,":",port)
 
-    elif mode == "Arbitrary":
-        pass
+    if mode == "Arbitrary":
+        delay = random.randrange(10)
+        if delay:
+            time.sleep(delay)
+            print("Introducing delay of ", delay, " seconds")
+
+    sock.sendall(msg.encode())
+
 
 t1 = threading.Thread(target=recv)
 executor = ThreadPoolExecutor(100)

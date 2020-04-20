@@ -28,3 +28,12 @@ if __name__ == "__main__":
                 # line  = inp.readline()
                 # [sender, receiver, message] = line.split(",")
                 # Node2.send(receiver,message,"FIFO")
+
+        elif choice == 2:
+            with open("FIFO_test.csv", "r") as inp:
+                for line in inp:
+                    [sender, receiver, message] = line.split(",")
+                    # print(sender,receiver,message)
+                    node_mapping[sender].send(receiver,message,"Arbitrary")
+                    time.sleep(2)
+            
