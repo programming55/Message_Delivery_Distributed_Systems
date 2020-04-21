@@ -33,17 +33,16 @@ def node_recv(conn,rip,rport):
     if(Type_of_Message == 'Request'):
         Request_Queue.put((int(TimeStamp), Id))
         Clock += 1
-        msg = str(Clock) + " Node2 Reply"
-        # print(mode)
+        msg = str(Clock) + " Node5 Reply"
         send(Id, msg, mode) # get mode
     elif(Type_of_Message == 'Reply'):
         Recv_Counter += 1
     elif(Type_of_Message == 'Release'):
         Request_Queue.get()
     else:
-    	print("Received message:", Type_of_Message, "from address",rip,":",rport)
-    	driver.Increment_Counter()
-    	# print(driver.counter)
+        print("Received message:", Type_of_Message, "from address",rip,":",rport)
+        driver.Increment_Counter()
+        # print(driver.counter)
 
     conn.close()
     return data
@@ -52,7 +51,7 @@ def recv():
     global Clock
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((ip_addr,node_to_port["Node2"]))
+    sock.bind((ip_addr,node_to_port["Node5"]))
     sock.listen()
 
     while (True):
@@ -80,23 +79,23 @@ def node_send(node, msg):
 t1 = start_new_thread(recv,())
 
 def send(node, msg, mode_recv):
-	global mode
-	mode = mode_recv
-	if mode == "Arbitrary":
-		start_new_thread(node_send, (node,msg))
-	else:
-		node_send(node,msg)
+    global mode
+    mode = mode_recv
+    if mode == "Arbitrary":
+        start_new_thread(node_send, (node,msg))
+    else:
+        node_send(node,msg)
 
 def critical_section(mode_recv):
-	global mode
-	mode = mode_recv
-	start_new_thread(cs,())
+    global mode
+    mode = mode_recv
+    start_new_thread(cs,())
 
 def get_counter():
-	return driver.counter
+    return driver.counter
 
 def clr_counter():
-	return driver.Clear_Counter()
+    return driver.Clear_Counter()
 
 def cs():
     global Recv_Counter
@@ -109,12 +108,12 @@ def cs():
     # Broadcasting Request
 
     Clock += 1
-    Request_Queue.put((Clock, "Node2"))
-    msg = str(Clock) + " Node2 Request"
+    Request_Queue.put((Clock, "Node5"))
+    msg = str(Clock) + " Node5 Request"
     time.sleep(1) 
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
-        if(Node != "Node2"):
+        if(Node != "Node5"):
             send(Node, msg, mode)
 
 
@@ -126,7 +125,7 @@ def cs():
     # print(Req_Top)
     Counter = Recv_Counter
 
-    while(Req_Top[1] != "Node2" or Counter < Total_Nodes - 1):
+    while(Req_Top[1] != "Node5" or Counter < Total_Nodes - 1):
         time.sleep(1)
         Req_Top = Request_Queue.get()
         Request_Queue.put(Req_Top)
@@ -136,19 +135,19 @@ def cs():
     # Critical Section
 
     Recv_Counter -= Total_Nodes - 1
-    print("Executing critical section of Node2")
+    print("Executing critical section of Node5")
     time.sleep(15)
-    print("Exiting critical section of Node2")
+    print("Exiting critical section of Node5")
 
     # Broadcasting Release
 
     Request_Queue.get()
     Clock += 1
-    msg = str(Clock) + " Node2 Release"
+    msg = str(Clock) + " Node5 Release"
     
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
-        if(Node != "Node2"):
+        if(Node != "Node5"):
             send(Node, msg, mode)
 
     driver.Increment_Counter()
