@@ -42,7 +42,7 @@ def ack_timer(Message_ID, msg):
         if Message_ID not in msg_resend_counter:
             msg_resend_counter[Message_ID] = 1
         else:
-            msg_resend_counter1[Message_ID] += 1
+            msg_resend_counter[Message_ID] += 1
 
         if msg_resend_counter[Message_ID] > 3:
             for node in ack_received:
