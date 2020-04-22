@@ -8,34 +8,18 @@ import Node6
 from queue import PriorityQueue
 
 node_mapping = {"Node1": Node1, "Node2": Node2, "Node3": Node3, "Node4": Node4, "Node5": Node5, "Node6": Node6}
+
 counter = 0
 total_nodes = 6
-Request_Clock_Queue = PriorityQueue()
-Request_Clock_List = []
-Execution_List = []
+
+Request_Clock_Queue = PriorityQueue() # To store critical section requests in correct order
+
+Request_Clock_List = [] # To store critical section requests in actual order
+Execution_List = [] # Execution order of critical section entry and exit record
+
 Mututal_Exclusion_Result_File = "Mutual_Execlusion_Result"
 FIFO_Result_File = "FIFO_Result"
 Arbitrary_Result_File = "Arbitrary_Result"
-
-def Push_Request_Clock_Queue(tuple):
-	global Request_Clock_Queue
-	Request_Clock_Queue.put(tuple)
-
-def Append_Request_Clock_List(tuple):
-	global Request_Clock_List
-	Request_Clock_List.append(tuple)
-
-def Append_Execution_List(Process):
-	global Append_Execution_List
-	Execution_List.append(Process)
-
-def Increment_Counter():
-	global counter
-	counter += 1
-
-def Clear_Counter():
-	global counter
-	counter = 0
 
 if __name__ == "__main__":
     while (True):
@@ -49,26 +33,28 @@ if __name__ == "__main__":
             print("Exiting Simulation...")
             break
 
-        elif choice == 1:
+        elif choice == 1: # To simulate FIFO message delivery
             Total_Send_Recv = 0
-            Node1.clr_counter()
+            Node5.clr_counter()
+
             with open("FIFO_test.csv", "r") as inp:
                 id = 1
                 for line in inp:
                     [sender, receiver, message] = line.split(",")
-                    # print(sender,receiver,message)
                     node_mapping[sender].send(receiver,"1 " + sender + " " + str(id) + " " + message.rstrip() , "FIFO")
                     id += 1
                     Total_Send_Recv += 1
             
-            # print(Total_Send_Recv)
-            while(Node1.get_counter() < Total_Send_Recv):
+            while(Node5.get_counter() < Total_Send_Recv):
+            	time.sleep(2)
             	continue
 
-            Node1.Write_Result_In_File()
-        elif choice == 2:
+            Node5.Write_Result_In_File("FIFO")
+
+        elif choice == 2: # To simulate Arbitrary message delivery
             Total_Send_Recv = 0
-            Node1.clr_counter()
+            Node5.clr_counter()
+
             with open("FIFO_test.csv", "r") as inp:
                 id = 1
                 for line in inp:
@@ -77,43 +63,41 @@ if __name__ == "__main__":
                     id += 1
                     Total_Send_Recv += 1
             
-            while(Node1.get_counter() < Total_Send_Recv):
+            while(Node5.get_counter() < Total_Send_Recv):
+            	time.sleep(2)
             	continue
-                    # time.sleep(2)
 
-            Node1.Write_Result_In_File()
+            Node5.Write_Result_In_File("Arbitrary")
 
         elif choice == 3:
-        	Total_Send_Recv = 0
-        	Node6.clr_counter()
+        	Total_Send_Recv = 0 # To measure impact on Lamport's Mutual Exclusion Algorithm on FIFO channel
+        	Node5.clr_counter()
+
         	with open("ME_Test.csv", "r") as inp:
         		for Node in inp:
         			node_mapping[Node.rstrip()].critical_section("FIFO")
         			Total_Send_Recv += 1
 
 
-        	while(Node6.get_counter() < Total_Send_Recv):
+        	while(Node5.get_counter() < Total_Send_Recv):
+        		time.sleep(2)
         		continue
 
-        	Node6.Write_Mutual_Exclusion_Result_In_File()
-        	# Node1.Node_Print_Queue_Size()
-        	# Node1.Node_Print_Request_Clock_List()
-        	# Node1.Node_Print_Execution_List()
-        	# print(Request_Clock_List)
-        	# print(Execution_List)
-
-        	Total_Send_Recv = 0
-        	Node6.clr_counter()
+        	Node1.Write_Mutual_Exclusion_Result_In_File()
+        	
+        	Total_Send_Recv = 0 # To measure impact on Lamport's Mutual Exclusion Algorithm on Arbitrary channel
+        	Node1.clr_counter()
 
         	with open("ME_Test.csv", "r") as inp:
         		for Node in inp:
         			node_mapping[Node.rstrip()].critical_section("Arbitrary")
         			Total_Send_Recv += 1
 
-        	while(Node6.get_counter() < Total_Send_Recv):
+        	while(Node1.get_counter() < Total_Send_Recv):
         		time.sleep(2)
         		continue
 
-        	Node6.Write_Mutual_Exclusion_Result_In_File()
+        	Node1.Write_Mutual_Exclusion_Result_In_File()
+
         else:
             print("Wrong Input...")
