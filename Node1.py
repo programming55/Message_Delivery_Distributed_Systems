@@ -34,16 +34,15 @@ def node_recv(conn,rip,rport):
         Request_Queue.put((int(TimeStamp), Id))
         Clock += 1
         msg = str(Clock) + " Node1 Reply"
-        # print(mode)
         send(Id, msg, mode) # get mode
     elif(Type_of_Message == 'Reply'):
         Recv_Counter += 1
     elif(Type_of_Message == 'Release'):
         Request_Queue.get()
     else:
-    	print("Received message:", Type_of_Message, "from address",rip,":",rport)
-    	driver.Increment_Counter()
-    	# print(driver.counter)
+        print("Received message:", Type_of_Message, "from address",rip,":",rport)
+        driver.Increment_Counter()
+        # print(driver.counter)
 
     conn.close()
     return data
@@ -68,7 +67,7 @@ def node_send(node, msg):
     sock.connect((ip_addr,port))
     print("Mode: ", mode)
     if mode == "Arbitrary":
-        delay = random.randrange(10)
+        delay = random.randrange(5)
         if delay:
             time.sleep(delay)
             # print("Introducing delay of ", delay, " seconds")
@@ -80,30 +79,54 @@ def node_send(node, msg):
 t1 = start_new_thread(recv,())
 
 def send(node, msg, mode_recv):
-	global mode
-	mode = mode_recv
-	if mode == "Arbitrary":
-		# print("yes")
-		start_new_thread(node_send, (node,msg))
-	else:
-		node_send(node,msg)
+    global mode
+    mode = mode_recv
+    if mode == "Arbitrary":
+        start_new_thread(node_send, (node,msg))
+    else:
+        node_send(node,msg)
 
 def critical_section(mode_recv):
-	global mode
-	mode = mode_recv
-	start_new_thread(cs,())
+    global mode
+    mode = mode_recv
+    start_new_thread(cs,())
+
+def Write_Mutual_Exclusion_Result_In_File():
+    File = None
+    if(mode == "Arbitrary"):
+        File = open(driver.Mututal_Exclusion_Result_File,'a')
+    else:
+        File = open(driver.Mututal_Exclusion_Result_File,'w')
+    
+    File.write("Using " + mode + " order of channel\n")
+    File.write("Processes Requests with Timestamp and process (Tsi,i)\n")
+
+    for Tsi_id in driver.Request_Clock_List:
+        File.write(str(Tsi_id) + '\n')
+
+    driver.Request_Clock_List.clear()
+    File.write("\nCorrect Order of processes to execute critical section is:\n")
+    while(driver.Request_Clock_Queue.qsize()):
+        File.write(str(driver.Request_Clock_Queue.get()[1]) + '\n')
+
+    File.write("\nActual Order of processes to execute critical section is:\n")
+    for Process in driver.Execution_List:
+        File.write(str(Process) + '\n')
+
+    driver.Execution_List.clear()
+    File.write('\n\n')
+    File.close()
 
 def get_counter():
-	return driver.counter
+    return driver.counter
 
 def clr_counter():
-	return driver.Clear_Counter()
+    return driver.Clear_Counter()
 
 def cs():
     global Recv_Counter
     global Clock
 
-    # print(mode)
     Clock = 0
     Recv_Counter = 0
 
@@ -112,8 +135,12 @@ def cs():
 
     Clock += 1
     Request_Queue.put((Clock, "Node1"))
+    driver.Append_Request_Clock_List((Clock, "Node1"))
+    driver.Push_Request_Clock_Queue((Clock, "Node1"))
     msg = str(Clock) + " Node1 Request"
-    time.sleep(1) 
+    # if(mode == "Arbitrary"):
+    #     time.sleep(2)
+
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
         if(Node != "Node1"):
@@ -138,9 +165,10 @@ def cs():
     # Critical Section
 
     Recv_Counter -= Total_Nodes - 1
-    print("Executing critical section of Node1")
-    time.sleep(15)
-    print("Exiting critical section of Node1")
+    driver.Append_Execution_List("Executing critical section of Node1")
+    # print("Executing critical section of Node2")
+    time.sleep(10)
+    driver.Append_Execution_List("Exiting critical section of Node1")
 
     # Broadcasting Release
 
