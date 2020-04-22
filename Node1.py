@@ -7,7 +7,7 @@ import time
 from queue import PriorityQueue
 import driver
 
-node_to_port = {"Node1": 8001, "Node2": 8002, "Node3": 8003, "Node4": 8004, "Node5": 8005, "Node6": 8006, "Node7": 8007, }
+node_to_port = {"Node1": 9001, "Node2": 9002, "Node3": 9003, "Node4": 9004, "Node5": 9005, "Node6": 9006, "Node7": 9007, }
 ip_addr = "127.0.0.1"
 
 # out_lock = threading.Lock()
@@ -66,7 +66,7 @@ def node_send(node, msg):
     port = node_to_port[node]
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((ip_addr,port))
-
+    print("Mode: ", mode)
     if mode == "Arbitrary":
         delay = random.randrange(10)
         if delay:
