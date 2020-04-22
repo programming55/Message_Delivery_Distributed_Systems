@@ -8,25 +8,63 @@ from queue import PriorityQueue
 import driver
 
 node_to_port = {"Node1": 9001, "Node2": 9002, "Node3": 9003, "Node4": 9004, "Node5": 9005, "Node6": 9006, "Node7": 9007, }
-# node_to_port = {"Node1": 8001, "Node2": 8002, "Node3": 8003, "Node4": 8004, "Node5": 8005, "Node6": 8006, "Node7": 8007, }
 ip_addr = "127.0.0.1"
-
+Nodes = ["Node5", "Node2", "Node3", "Node4", "Node5", "Node6", "Node7"]
 # out_lock = threading.Lock()
+
 
 Request_Queue = PriorityQueue()
 Recv_Counter = 0
 Clock = 0
 Total_Nodes = 6
-
 mode = "FIFO"
+MSG_ID = 0
+ack_required = {}
+ack_received = {}
+msg_resend_counter = {}
+resend_messages = {}
+
+def ack_timer(Message_ID, msg):
+    global  ack_required
+    global msg_resend_counter
+    global resend_messages
+
+    start = time.time()
+    seconds = 50
+    elapsed = 0
+    while elapsed < seconds:
+        elapsed = time.time() - start
+        time.sleep(2)
+
+    if ack_required[Message_ID] == 0:
+        del ack_required[Message_ID]
+    else:
+        if Message_ID not in msg_resend_counter:
+            msg_resend_counter[Message_ID] = 1
+        else:
+            msg_resend_counter1[Message_ID] += 1
+
+        if msg_resend_counter[Message_ID] > 3:
+            for node in ack_received:
+                if node not in resend_messages:
+                    resend_messages[node] = [msg]
+                else:
+                    resend_messages[node].append(msg)
+        else:
+            start_new_thread(ack_timer, (Message_ID, msg))
 
 def node_recv(conn,rip,rport):
     global Clock
     global Recv_Counter
+    global ACK_Received
+    global ack_required
+    global ack_received
+    global mode
+    
     ack = "received"
-
     data = conn.recv(1024).decode()
-    TimeStamp, Id, Type_of_Message = data.split(' ')
+    print(data)
+    TimeStamp, Id, Message_ID, Type_of_Message  = data.split(' ')
 
     Clock = max(Clock, int(TimeStamp))
     Clock += 1
@@ -34,16 +72,39 @@ def node_recv(conn,rip,rport):
     if(Type_of_Message == 'Request'):
         Request_Queue.put((int(TimeStamp), Id))
         Clock += 1
-        msg = str(Clock) + " Node5 Reply"
+        msg = str(Clock) + " Node5 " + str(Message_ID) + " Reply" 
         send(Id, msg, mode) # get mode
+        ack_required[Message_ID] = 1
+        start_new_thread(ack_timer, (Message_ID, msg))
+
     elif(Type_of_Message == 'Reply'):
         Recv_Counter += 1
+        Clock += 1
+        msg = str(Clock) + " Node5 " + str(Message_ID) + " ACK_Reply"
+        send(Id, msg, mode)
+
     elif(Type_of_Message == 'Release'):
+        Clock += 1
+        msg = str(Clock) + " Node5 " + str(Message_ID) + " ACK_Release"
+        send(Id, msg, mode)
         Request_Queue.get()
+
+    elif "ACK" in Type_of_Message:
+        print("ACK received from ", Id, "for message id ", Message_ID, " ACK_TYPE ", Type_of_Message)
+        ack_required[Message_ID] -= 1
+        if Message_ID in ack_received:
+            ack_received[Message_ID].append(Id)
+        else:
+            ack_received[Message_ID] = [Id]
+
     else:
         print("Received message:", Type_of_Message, "from address",rip,":",rport)
+        Clock += 1
+        msg = str(Clock) + " Node5 " + str(Message_ID) + " ACK_Other"
+        send(Id, msg, mode)
         driver.Increment_Counter()
         # print(driver.counter)
+
 
     conn.close()
     return data
@@ -63,17 +124,22 @@ def recv():
     sock.close()
 
 def node_send(node, msg):
+    global ack_required
+
     port = node_to_port[node]
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((ip_addr,port))
-
     if mode == "Arbitrary":
         delay = random.randrange(5)
         if delay:
             time.sleep(delay)
             # print("Introducing delay of ", delay, " seconds")
-
     sock.sendall(msg.encode())
+
+    TimeStamp, Id, Message_ID, Type_of_Message = msg.split(' ')
+    if Type_of_Message not in ['Request', 'Reply', 'Release']:
+        ack_required[Message_ID] = 1
+
     sock.close()
 
 
@@ -127,6 +193,8 @@ def clr_counter():
 def cs():
     global Recv_Counter
     global Clock
+    global MSG_ID
+    global ack_required
 
     Clock = 0
     Recv_Counter = 0
@@ -138,9 +206,10 @@ def cs():
     Request_Queue.put((Clock, "Node5"))
     driver.Append_Request_Clock_List((Clock, "Node5"))
     driver.Push_Request_Clock_Queue((Clock, "Node5"))
-    msg = str(Clock) + " Node5 Request"
-    # if(mode == "Arbitrary"):
-    #     time.sleep(2)
+    MSG_ID += 1
+    msg = str(Clock) + " Node5 " + str(MSG_ID) + " Request"
+    if(mode == "Arbitrary"):
+        time.sleep(5)
 
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
@@ -175,8 +244,10 @@ def cs():
 
     Request_Queue.get()
     Clock += 1
-    msg = str(Clock) + " Node5 Release"
-    
+    MSG_ID += 1
+    msg = str(Clock) + " Node5 " + str(MSG_ID) + " Release"
+    ack_required[MSG_ID] = Total_Nodes - 1
+    start_new_thread(ack_timer, (Message_ID, msg))    
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
         if(Node != "Node5"):

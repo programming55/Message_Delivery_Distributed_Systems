@@ -79,10 +79,12 @@ if __name__ == "__main__":
             Total_Send_Recv = 0
             Node1.clr_counter()
             with open("FIFO_test.csv", "r") as inp:
+                id = 1
                 for line in inp:
                     [sender, receiver, message] = line.split(",")
                     # print(sender,receiver,message)
-                    node_mapping[sender].send(receiver,"1 " + sender + " " + message.rstrip(),"FIFO")
+                    node_mapping[sender].send(receiver,"1 " + sender + " " + str(id) + " " + message.rstrip() , "FIFO")
+                    id += 1
                     Total_Send_Recv += 1
             
             # print(Total_Send_Recv)
@@ -98,9 +100,11 @@ if __name__ == "__main__":
             Total_Send_Recv = 0
             Node1.clr_counter()
             with open("FIFO_test.csv", "r") as inp:
+                id = 1
                 for line in inp:
                     [sender, receiver, message] = line.split(",")
-                    node_mapping[sender].send(receiver,"1 " + sender+ " " + message.rstrip(),"Arbitrary")
+                    node_mapping[sender].send(receiver,"1 " + sender + " " + str(id) + " " + message.rstrip() , "FIFO")
+                    id += 1
                     Total_Send_Recv += 1
             
             while(Node1.get_counter() < Total_Send_Recv):
