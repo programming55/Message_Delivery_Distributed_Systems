@@ -9,7 +9,7 @@ import driver
 
 node_to_port = {"Node1": 9001, "Node2": 9002, "Node3": 9003, "Node4": 9004, "Node5": 9005, "Node6": 9006, "Node7": 9007, }
 ip_addr = "127.0.0.1"
-Nodes = ["Node5", "Node2", "Node3", "Node4", "Node5", "Node6", "Node7"]
+Nodes = ["Node5", "Node5", "Node3", "Node4", "Node5", "Node5", "Node7"]
 # out_lock = threading.Lock()
 
 
@@ -36,13 +36,13 @@ def ack_timer(Message_ID, msg):
         elapsed = time.time() - start
         time.sleep(2)
 
-    if ack_required[Message_ID] == 0:
+    if Message_ID in ack_required and ack_required[Message_ID] == 0:
         del ack_required[Message_ID]
     else:
         if Message_ID not in msg_resend_counter:
             msg_resend_counter[Message_ID] = 1
         else:
-            msg_resend_counter1[Message_ID] += 1
+            msg_resend_counter[Message_ID] += 1
 
         if msg_resend_counter[Message_ID] > 3:
             for node in ack_received:
@@ -63,7 +63,7 @@ def node_recv(conn,rip,rport):
     
     ack = "received"
     data = conn.recv(1024).decode()
-    print(data)
+    # print(data)
     TimeStamp, Id, Message_ID, Type_of_Message  = data.split(' ')
 
     Clock = max(Clock, int(TimeStamp))
@@ -74,8 +74,8 @@ def node_recv(conn,rip,rport):
         Clock += 1
         msg = str(Clock) + " Node5 " + str(Message_ID) + " Reply" 
         send(Id, msg, mode) # get mode
-        ack_required[Message_ID] = 1
-        start_new_thread(ack_timer, (Message_ID, msg))
+        ack_required[int(Message_ID)] = 1
+        start_new_thread(ack_timer, (int(Message_ID), msg))
 
     elif(Type_of_Message == 'Reply'):
         Recv_Counter += 1
@@ -90,21 +90,20 @@ def node_recv(conn,rip,rport):
         Request_Queue.get()
 
     elif "ACK" in Type_of_Message:
-        print("ACK received from ", Id, "for message id ", Message_ID, " ACK_TYPE ", Type_of_Message)
-        ack_required[Message_ID] -= 1
-        if Message_ID in ack_received:
-            ack_received[Message_ID].append(Id)
+        # print("ACK received from ", Id, "for message id ", Message_ID, " ACK_TYPE ", Type_of_Message)
+        ack_required[int(Message_ID)] -= 1
+        if int(Message_ID) in ack_received:
+            ack_received[int(Message_ID)].append(Id)
         else:
-            ack_received[Message_ID] = [Id]
+            ack_received[int(Message_ID)] = [Id]
 
     else:
-        print("Received message:", Type_of_Message, "from address",rip,":",rport)
+        # print("Received message:", Type_of_Message, "from address",rip,":",rport)
+        driver.Execution_List.append(str("Received message: " + Type_of_Message + " from address " + str(rip) + " : " + str(rport)))
         Clock += 1
         msg = str(Clock) + " Node5 " + str(Message_ID) + " ACK_Other"
         send(Id, msg, mode)
         driver.Increment_Counter()
-        # print(driver.counter)
-
 
     conn.close()
     return data
@@ -138,7 +137,7 @@ def node_send(node, msg):
 
     TimeStamp, Id, Message_ID, Type_of_Message = msg.split(' ')
     if Type_of_Message not in ['Request', 'Reply', 'Release']:
-        ack_required[Message_ID] = 1
+        ack_required[int(Message_ID)] = 1
 
     sock.close()
 
@@ -184,6 +183,22 @@ def Write_Mutual_Exclusion_Result_In_File():
     File.write('\n\n')
     File.close()
 
+def Write_Result_In_File():
+    File = None
+    if(mode == "Arbitrary"):
+        File = open(driver.Arbitrary_Result_File,'w')
+    else:
+        File = open(driver.FIFO_Result_File,'w')
+    
+    File.write("Order of message processed\n\n")
+
+    for Message in driver.Execution_List:
+        File.write(Message + '\n')
+
+    driver.Execution_List.clear()
+    File.write('\n\n')
+    File.close()
+
 def get_counter():
     return driver.counter
 
@@ -208,8 +223,8 @@ def cs():
     driver.Push_Request_Clock_Queue((Clock, "Node5"))
     MSG_ID += 1
     msg = str(Clock) + " Node5 " + str(MSG_ID) + " Request"
-    if(mode == "Arbitrary"):
-        time.sleep(5)
+    # if(mode == "Arbitrary"):
+    #     time.sleep(5)
 
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
@@ -236,7 +251,7 @@ def cs():
 
     Recv_Counter -= Total_Nodes - 1
     driver.Append_Execution_List("Executing critical section of Node5")
-    # print("Executing critical section of Node2")
+    # print("Executing critical section of Node5")
     time.sleep(10)
     driver.Append_Execution_List("Exiting critical section of Node5")
 
@@ -247,7 +262,7 @@ def cs():
     MSG_ID += 1
     msg = str(Clock) + " Node5 " + str(MSG_ID) + " Release"
     ack_required[MSG_ID] = Total_Nodes - 1
-    start_new_thread(ack_timer, (Message_ID, msg))    
+    start_new_thread(ack_timer, (MSG_ID, msg))    
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
         if(Node != "Node5"):

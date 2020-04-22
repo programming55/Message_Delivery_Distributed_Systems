@@ -14,33 +14,8 @@ Request_Clock_Queue = PriorityQueue()
 Request_Clock_List = []
 Execution_List = []
 Mututal_Exclusion_Result_File = "Mutual_Execlusion_Result"
-
-def Write_In_Mututal_Exclusion_Result_File(Mode):
-	File = open(Mututal_Exclusion_Result_File,'w')
-	
-	File.write("Using " + Mode + " order of channel")
-	File.write("Processes Requests with Timestamp and process (Tsi,i)")
-
-	for Tsi_id in Request_Clock_List:
-		File.write(Tsi_id)
-
-	File.write("\nCorrect Order of processes to execute critical section is:")
-	while(Request_Clock_Queue.qsize()):
-		File.write(Request_Clock_Queue.get()[1])
-
-	File.write("\nActual Order of processes to execute critical section is:")
-	for Process in Execution_List:
-		File.write(Process)
-
-	File.close()
-# # def Print_Queue():
-# 	print(Request_Clock_Queue.qsize())
-
-# def Print_Request_Clock_List():
-# 	print(Request_Clock_List)
-
-# def Print_Execution_List():
-# 	print(Execution_List)
+FIFO_Result_File = "FIFO_Result"
+Arbitrary_Result_File = "Arbitrary_Result"
 
 def Push_Request_Clock_Queue(tuple):
 	global Request_Clock_Queue
@@ -67,11 +42,10 @@ if __name__ == "__main__":
         print("Press 1 to simulate FIFO message delivery guarantee")
         print("Press 2 to simulate Arbitrary message delivery guarantee")
         print("Press 3 to measure impact on Lamport's Mutual Exclusion Algorithm")
-        print("Press 4 to measure impact on Ricarta-Agrawal's Mutual Exclusion Algorithm")
-        print("Press 5 to quit simulation")
+        print("Press 4 to quit simulation")
         choice = int(input())
 
-        if choice == 5:
+        if choice == 4:
             print("Exiting Simulation...")
             break
 
@@ -90,12 +64,8 @@ if __name__ == "__main__":
             # print(Total_Send_Recv)
             while(Node1.get_counter() < Total_Send_Recv):
             	continue
-                    # time.sleep(2)
 
-                # line  = inp.readline()
-                # [sender, receiver, message] = line.split(",")
-                # Node2.send(receiver,message,"FIFO")
-
+            Node1.Write_Result_In_File()
         elif choice == 2:
             Total_Send_Recv = 0
             Node1.clr_counter()
@@ -103,7 +73,7 @@ if __name__ == "__main__":
                 id = 1
                 for line in inp:
                     [sender, receiver, message] = line.split(",")
-                    node_mapping[sender].send(receiver,"1 " + sender + " " + str(id) + " " + message.rstrip() , "FIFO")
+                    node_mapping[sender].send(receiver,"1 " + sender + " " + str(id) + " " + message.rstrip() , "Arbitrary")
                     id += 1
                     Total_Send_Recv += 1
             
@@ -111,16 +81,18 @@ if __name__ == "__main__":
             	continue
                     # time.sleep(2)
 
+            Node1.Write_Result_In_File()
+
         elif choice == 3:
         	Total_Send_Recv = 0
-        	Node1.clr_counter()
+        	Node6.clr_counter()
         	with open("ME_Test.csv", "r") as inp:
         		for Node in inp:
         			node_mapping[Node.rstrip()].critical_section("FIFO")
         			Total_Send_Recv += 1
 
 
-        	while(Node1.get_counter() < Total_Send_Recv):
+        	while(Node6.get_counter() < Total_Send_Recv):
         		continue
 
         	Node6.Write_Mutual_Exclusion_Result_In_File()
@@ -144,7 +116,4 @@ if __name__ == "__main__":
 
         	Node6.Write_Mutual_Exclusion_Result_In_File()
         else:
-            print("Exiting Simulation...")
-            break
-
-            
+            print("Wrong Input...")
