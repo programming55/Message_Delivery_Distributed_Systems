@@ -74,7 +74,6 @@ class Node:
 	        self.Clock += 1
 	        msg = str(self.Clock) + " " + self.curr_node + " " + str(Message_ID) + " Reply" 
 	        self.send(Id, msg, self.mode)
-	        print(self.curr_node + " Sending Reply message to ", Id)
 	        if int(Message_ID) in self.ack_expected:
 	            self.ack_expected[int(Message_ID)].append(Id)
 	        else:
@@ -94,12 +93,10 @@ class Node:
 	        self.Request_Queue.get()
 
 	    elif "ACK" in Type_of_Message:
-	        # print("ACK received from ", Id, "for message id ", Message_ID, " ACK_TYPE ", Type_of_Message)
 	        if int(Message_ID) in self.ack_expected and  Id in self.ack_expected[int(Message_ID)]:
 	            self.ack_expected[int(Message_ID)].remove(Id)
 
 	    else:
-	        # print("Received message:", Type_of_Message, "from address",rip,":",rport)
 	    	self.driver.Execution_List.append(str("Received message: " + Type_of_Message + " from address " + str(rip) + " : " + str(rport)))
 	    	self.Clock += 1
 	    	msg = str(self.Clock) + " " + self.curr_node + " " + str(Message_ID) + " ACK_Other"
@@ -124,9 +121,7 @@ class Node:
 
 	def node_send(self, node, msg):
 	    port = self.node_to_port[node]
-	    # print(self.curr_node, port)
 	    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	    # print(self.curr_node + " Connectin to node " + node + " " +msg )
 	    sock.connect((self.ip_addr,port))
 
 	    if self.mode == "Arbitrary": # For arbitrart channel, introducing random delay in each message send to make messages out of order
@@ -169,7 +164,6 @@ class Node:
    		# Broadcasting Request
 
    		self.Clock += 1
-   		print("Requesting CS for ", self.curr_node)
    		
    		self.Request_Queue.put((self.Clock, self.curr_node))
    		self.driver.Request_Clock_Queue.put((self.Clock, self.curr_node))
@@ -188,7 +182,6 @@ class Node:
    			if(Node != self.curr_node):
    				self.send(Node, msg, self.mode)
 
-   		print("Request msg sent ", self.curr_node)
    		#Wait for Critical Section
 
    		Req_Top = None
@@ -204,13 +197,11 @@ class Node:
 
    		self.Recv_Counter -= self.Total_Nodes - 1
    		# Critical Section Entry
-   		print("executing CS ", self.curr_node)
 
    		self.driver.Execution_List.append("Executing critical section of "+ self.curr_node)
    		time.sleep(10)
    		self.driver.Execution_List.append("Exiting critical section of "+ self.curr_node)
 
-   		print("Finished with CS ", self.curr_node)
    		# Critical Section Exit
 
    		# Broadcasting Release
@@ -220,7 +211,6 @@ class Node:
    		self.Clock += 1
    		self.MSG_ID += 1
 
-   		print("Sending release msg ", self.curr_node)
    		msg = str(self.Clock) + " " + self.curr_node + " " + str(self.MSG_ID) + " Release"
    		if int(self.MSG_ID) not in self.ack_expected:
    			self.ack_expected[int(self.MSG_ID)] = []
@@ -232,5 +222,4 @@ class Node:
    				self.ack_expected[int(self.MSG_ID)].append(Node)
 
    		start_new_thread(self.ack_timer, (self.MSG_ID, msg))
-   		print("Release msg sent ", self.curr_node)
    		self.driver.counter += 1
