@@ -12,9 +12,9 @@ class CommonLists:
         self.Request_Clock_Queue = PriorityQueue() # To store critical section requests in correct order
         self.Request_Clock_List = [] # To store critical section requests in actual order
         self.Execution_List = [] # Execution order of critical section entry and exit record
-        self.Mututal_Exclusion_Result_File = "Mutual_Execlusion_Result"
-        self.FIFO_Result_File = "FIFO_Result"
-        self.Arbitrary_Result_File = "Arbitrary_Result"
+        self.Mututal_Exclusion_Result_File = "Mutual_Execlusion_Result.txt"
+        self.FIFO_Result_File = "FIFO_Result.txt"
+        self.Arbitrary_Result_File = "Arbitrary_Result.txt"
 
 driver_obj = CommonLists()
 

@@ -97,7 +97,7 @@ class Node:
 	            self.ack_expected[int(Message_ID)].remove(Id)
 
 	    else:
-	    	self.driver.Execution_List.append(self.curr_node + str(": Received message: " + Type_of_Message + " from address " + str(rip) + " : " + str(rport)))
+	    	self.driver.Execution_List.append(self.curr_node + str(": Received message: " + Type_of_Message + " from address " + str(rip) + " : " + str(rport)) + "\n")
 	    	self.Clock += 1
 	    	msg = str(self.Clock) + " " + self.curr_node + " " + str(Message_ID) + " ACK_Other"
 	    	self.send(Id, msg, self.mode)
