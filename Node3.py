@@ -7,10 +7,8 @@ import time
 from queue import PriorityQueue
 import driver
 
-node_to_port = {"Node1": 9001, "Node2": 9002, "Node3": 9003, "Node4": 9004, "Node5": 9005, "Node6": 9006, "Node7": 9007, }
+node_to_port = {"Node1": 7001, "Node2": 7002, "Node3": 7003, "Node4": 7004, "Node5": 7005, "Node6": 7006, "Node7": 7007, }
 ip_addr = "127.0.0.1"
-Nodes = ["Node1", "Node2", "Node3", "Node4", "Node5", "Node6", "Node7"]
-
 
 Request_Queue = PriorityQueue()
 Recv_Counter = 0
@@ -18,47 +16,48 @@ Clock = 0
 Total_Nodes = 6
 mode = "FIFO"
 MSG_ID = 0
-ack_required = {}
-ack_received = {}
 msg_resend_counter = {}
 resend_messages = {}
+ack_expected = {}
 
 def ack_timer(Message_ID, msg):
-    global  ack_required
+    global  ack_expected
     global msg_resend_counter
     global resend_messages
 
     start = time.time()
-    seconds = 50
+    seconds = 100
     elapsed = 0
     while elapsed < seconds:
         elapsed = time.time() - start
         time.sleep(2)
 
-    if Message_ID in ack_required and ack_required[Message_ID] == 0:
-        del ack_required[Message_ID]
-    else:
-        if Message_ID not in msg_resend_counter:
-            msg_resend_counter[Message_ID] = 1
+    if ack_expected[int(Message_ID)]:
+        if int(Message_ID) in ack_expected and len(ack_expected[int(Message_ID)]) == 0:
+            del ack_expected[int(Message_ID)]
         else:
-            msg_resend_counter[Message_ID] += 1
+            if Message_ID not in msg_resend_counter:
+                msg_resend_counter[Message_ID] = 1
+            else:
+                msg_resend_counter[Message_ID] += 1
 
-        if msg_resend_counter[Message_ID] > 3:
-            for node in ack_received:
-                if node not in resend_messages:
-                    resend_messages[node] = [msg]
-                else:
-                    resend_messages[node].append(msg)
-        else:
-            start_new_thread(ack_timer, (Message_ID, msg))
+            if msg_resend_counter[Message_ID] > 3:
+                for node in ack_expected[int(Message_ID)]:
+                    if node not in resend_messages:
+                        resend_messages[node] = [msg]
+                    else:
+                        resend_messages[node].append(msg)
+            else:
+                    for node in ack_expected[int(Message_ID)]:
+                        send(node, msg, mode)
+                    start_new_thread(ack_timer, (Message_ID, msg))
+
 
 def node_recv(conn,rip,rport):
     global Clock
     global Recv_Counter
-    global ACK_Received
-    global ack_required
-    global ack_received
     global mode
+    global ack_expected
     
     ack = "received"
     data = conn.recv(1024).decode()
@@ -72,7 +71,11 @@ def node_recv(conn,rip,rport):
         Clock += 1
         msg = str(Clock) + " Node3 " + str(Message_ID) + " Reply" 
         send(Id, msg, mode)
-        ack_required[int(Message_ID)] = 1
+        print("Node3 Sending Reply message to ", Id)
+        if int(Message_ID) in ack_expected:
+            ack_expected[int(Message_ID)].append(Id)
+        else:
+            ack_expected[int(Message_ID)] = [Id]
         start_new_thread(ack_timer, (int(Message_ID), msg))
 
     elif(Type_of_Message == 'Reply'):
@@ -89,11 +92,8 @@ def node_recv(conn,rip,rport):
 
     elif "ACK" in Type_of_Message:
         # print("ACK received from ", Id, "for message id ", Message_ID, " ACK_TYPE ", Type_of_Message)
-        ack_required[int(Message_ID)] -= 1
-        if int(Message_ID) in ack_received:
-            ack_received[int(Message_ID)].append(Id)
-        else:
-            ack_received[int(Message_ID)] = [Id]
+        if Id in ack_expected[int(Message_ID)]:
+            ack_expected[int(Message_ID)].remove(Id)
 
     else:
         # print("Received message:", Type_of_Message, "from address",rip,":",rport)
@@ -121,7 +121,7 @@ def recv(): # To receive message in background using thraad
     sock.close()
 
 def node_send(node, msg):
-    global ack_required
+    global ack_expected
 
     port = node_to_port[node]
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -136,7 +136,11 @@ def node_send(node, msg):
 
     TimeStamp, Id, Message_ID, Type_of_Message = msg.split(' ')
     if Type_of_Message not in ['Request', 'Reply', 'Release']:
-        ack_required[int(Message_ID)] = 1
+        if int (Message_ID) in ack_expected:
+            ack_expected[int(Message_ID)].append(node)
+        else:
+            ack_expected[int(Message_ID)] = [node]
+        # ack_required[int(Message_ID)] = 1
 
     sock.close()
 
@@ -213,7 +217,7 @@ def cs():
     global Recv_Counter
     global Clock
     global MSG_ID
-    global ack_required
+    global ack_expected
 
     Clock = 0
     Recv_Counter = 0
@@ -221,6 +225,7 @@ def cs():
     # Broadcasting Request
 
     Clock += 1
+    print("Requesting CS for Node3")
 
     Request_Queue.put((Clock, "Node3"))
     driver.Request_Clock_Queue.put((Clock, "Node3"))
@@ -229,13 +234,14 @@ def cs():
     MSG_ID += 1
     msg = str(Clock) + " Node3 " + str(MSG_ID) + " Request"
 
-    # if(mode == "Arbitrary"): # This is introduct to make special case where Lmaport fail in Arbitrary channel.
-    #     time.sleep(5)
+    if(mode == "Arbitrary"): # This is introduct to make special case where Lmaport fail in Arbitrary channel.
+        time.sleep(5)
 
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
         if(Node != "Node3"):
             send(Node, msg, mode)
+    print("Request msg sent Node3")
 
 
     # Wait for Critical Section
@@ -255,32 +261,40 @@ def cs():
     Recv_Counter -= Total_Nodes - 1
     
     # Critical Section Entry
+    print("executing CS Node3")
     
     driver.Execution_List.append("Executing critical section of Node3")
 
     time.sleep(10)
 
     driver.Execution_List.append("Exiting critical section of Node3")
+    print("Finished with CS Node3")
 
     # Critical Section Exit
 
     # Broadcasting Release
 
-    Request_Queue.get()
+    if not Request_Queue.empty():
+        Request_Queue.get()
     
     Clock += 1
     MSG_ID += 1
+    print("Sending release msg Node3")
 
     msg = str(Clock) + " Node3 " + str(MSG_ID) + " Release"
+    if int(MSG_ID) not in ack_expected:
+        ack_expected[int(MSG_ID)] = []
+    # ack_required[MSG_ID] = Total_Nodes - 1
     
-    ack_required[MSG_ID] = Total_Nodes - 1
-    
-    start_new_thread(ack_timer, (MSG_ID, msg))    
     
     for Id in range(Total_Nodes):
         Node = "Node" + str(Id + 1)
         if(Node != "Node3"):
             send(Node, msg, mode)
+            ack_expected[int(MSG_ID)].append(Node)
 
+    start_new_thread(ack_timer, (MSG_ID, msg))    
+    print("Release msg sent Node3")
+    
     # driver.Increment_Counter()
     driver.counter += 1
