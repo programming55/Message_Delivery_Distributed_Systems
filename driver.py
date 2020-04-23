@@ -58,7 +58,7 @@ if __name__ == "__main__":
             Total_Send_Recv = 0
             Node5.clr_counter()
 
-            with open("FIFO_test.csv", "r") as inp:
+            with open("Channel_test.csv", "r") as inp:
                 id = 1
                 for line in inp:
                     [sender, receiver, message] = line.split(",")
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             Total_Send_Recv = 0
             Node5.clr_counter()
 
-            with open("FIFO_test.csv", "r") as inp:
+            with open("Channel_test.csv", "r") as inp:
                 id = 1
                 for line in inp:
                     [sender, receiver, message] = line.split(",")

@@ -1,10 +1,16 @@
 Order of message processed
 
-Received message: Hello from address 127.0.0.1 : 58182
-Received message: Hi from address 127.0.0.1 : 45368
-Received message: Hi2 from address 127.0.0.1 : 45370
-Received message: Hi3 from address 127.0.0.1 : 45366
-Received message: Hello2 from address 127.0.0.1 : 58184
-Received message: Hello3 from address 127.0.0.1 : 58186
+Received message: Aloha_Node4_From_Node3_Msg#2 from address 127.0.0.1 : 52620
+Received message: Hi_Again_Node1_From_Node2_Msg#2 from address 127.0.0.1 : 48190
+Received message: Hi_Again_Node1_From_Node2_Msg#3 from address 127.0.0.1 : 48184
+Received message: Hi_Node1_From_Node2_Msg#1 from address 127.0.0.1 : 48198
+Received message: Hello_Node6_From_Node1_Msg#1 from address 127.0.0.1 : 55590
+Received message: Aloha_Node5_From_Node3_Msg#1 from address 127.0.0.1 : 51692
+Received message: Hello_Node2_From_Node1_Msg#3 from address 127.0.0.1 : 57214
+Received message: Aloha_Node5_From_Node3_Msg#2 from address 127.0.0.1 : 51684
+Received message: Aloha_Node4_From_Node3_Msg#1 from address 127.0.0.1 : 52610
+Received message: Hello_Node2_From_Node1_Msg#1 from address 127.0.0.1 : 57208
+Received message: Hello_Node2_From_Node1_Msg#2 from address 127.0.0.1 : 57210
+Received message: Hola_Node1_From_Node6_Msg#1 from address 127.0.0.1 : 48204
 
 

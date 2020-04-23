@@ -1,0 +1,24 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}% 
+\contentsline {section}{\numberline {2}Literature Review}{1}{section.2}% 
+\contentsline {subsection}{\numberline {2.1}Message Ordering and Group Communication}{1}{subsection.2.1}% 
+\contentsline {subsubsection}{\numberline {2.1.1}Arbitrary Order}{1}{subsubsection.2.1.1}% 
+\contentsline {subsubsection}{\numberline {2.1.2}FIFO Order}{2}{subsubsection.2.1.2}% 
+\contentsline {subsubsection}{\numberline {2.1.3}Causal Ordering}{2}{subsubsection.2.1.3}% 
+\contentsline {subsection}{\numberline {2.2}Distributed Mutual Exclusion Algorithms}{2}{subsection.2.2}% 
+\contentsline {subsubsection}{\numberline {2.2.1}Lamport's algorithm}{3}{subsubsection.2.2.1}% 
+\contentsline {section}{\numberline {3}Methodology}{3}{section.3}% 
+\contentsline {subsection}{\numberline {3.1}System Model}{4}{subsection.3.1}% 
+\contentsline {subsection}{\numberline {3.2}Development Environment}{4}{subsection.3.2}% 
+\contentsline {subsection}{\numberline {3.3}Creating FIFO Ordered Channel}{4}{subsection.3.3}% 
+\contentsline {subsection}{\numberline {3.4}Creating Arbitrary Ordered Channel}{4}{subsection.3.4}% 
+\contentsline {subsection}{\numberline {3.5}Implementing Lamport's Algorithm}{4}{subsection.3.5}% 
+\contentsline {subsection}{\numberline {3.6}Testing}{5}{subsection.3.6}% 
+\contentsline {section}{\numberline {4}Experimentation and Results}{5}{section.4}% 
+\contentsline {subsection}{\numberline {4.1}Testing the Message Ordering}{5}{subsection.4.1}% 
+\contentsline {subsection}{\numberline {4.2}Testing Mutual Exclusion Algorithm}{7}{subsection.4.2}% 
+\contentsline {subsection}{\numberline {4.3}Impact of Channel on Mutual Exclusion Algorithm}{9}{subsection.4.3}% 
+\contentsline {subsubsection}{\numberline {4.3.1}Correctness}{10}{subsubsection.4.3.1}% 
+\contentsline {subsubsection}{\numberline {4.3.2}Number of Messages}{10}{subsubsection.4.3.2}% 
+\contentsline {subsubsection}{\numberline {4.3.3}Algorithmic Runtime}{10}{subsubsection.4.3.3}% 
+\contentsline {section}{\numberline {5}Conclusion}{10}{section.5}% 
+\contentsline {section}{\numberline {6}Future Scope}{10}{section.6}% 

@@ -1,0 +1,32 @@
+Based on our discussion earlier today, here are a few guidelines that should help plan the video recording of the presentation.
+
+General Guidelines:
+1. Since the maximum time stipulated for the video is 7 minutes. Let us each not take more than 2.5 minutes. If we can do it within two minutes it would be better.
+2. We'll use screen recording tools like "Simple Screen Recorder" for  Linux.
+3. Please ensure that the option for microphone is enabled.
+4. It would be better if we can pre-decide what to say so that we don't hesitate or get stuck during the presentation.
+5. Let me know if there is any error in the presentation so that I may fix it before each of us start recording.
+
+For Harshita:
+1. Please have the pdf open as fullscreen and then start recording.
+2. You need to continue until slide 10. That is you will speak until the "Code Walkthrough" slide. You will explain the system model slide then continue to the "Code Walkthrough" slide. On reaching the "Code Walkthrough" slide say that now Ravi will continue and give a short Walkthrough of the code.
+3. Since there is limited time you can choose to skip speaking out each points in the slides allocated to you. However use your discretion so that something important might not be missed.
+
+
+For Ravi:
+1. You can directly start by having the code open before starting the recording (no need to open presentation).
+2. You can explain about the send and receive and things like multithreading.
+3. Talk about FIFO and Arbitrary channel implementation.
+4. Please ensure that you mention the various data structures used like priority queue and clocks, etc.
+5. At the last you can talk about the driver code and how it is used to choose which simulation to run but no need to run it and show.
+6. After you have explained the code you can say now Ankit will take over and go through the simulation and results.
+
+
+For Ankit:
+1. Start directly with the terminal opened and test case files opened.
+2. Explain the various outputs.
+3. Show the summary of results in the slides.
+4. Conclude and end the presentation.
+
+
+After each of us records the individual parts and sends them to me, I'll combine them and then send it back so that we all can see if anything needs improvement. I'll also share the report so that all of us can go through it and ensure there are no errors or omissions.
