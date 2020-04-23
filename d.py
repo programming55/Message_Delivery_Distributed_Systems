@@ -27,7 +27,6 @@ def start_nodes():
     Node6 = Node.Node(driver_obj.total_nodes, "127.0.0.1", driver_obj.node_to_port, "Node6", driver_obj)
     return Node1, Node2, Node3, Node4, Node5, Node6
 
-
 if __name__ == "__main__":
     Node1, Node2, Node3, Node4, Node5, Node6 = start_nodes()
     Node1.start()
@@ -50,6 +49,12 @@ if __name__ == "__main__":
             break
 
         elif choice == 1: # To simulate FIFO message delivery
+            Node1.clear_ack()
+            Node2.clear_ack()
+            Node3.clear_ack()
+            Node4.clear_ack()
+            Node5.clear_ack()
+            Node6.clear_ack()
             Total_Send_Recv = 0
             Node5.clr_counter()
 
@@ -62,12 +67,19 @@ if __name__ == "__main__":
                     Total_Send_Recv += 1
             
             while(Node5.get_counter() < Total_Send_Recv):
-            	time.sleep(2)
-            	continue
+                time.sleep(2)
+                continue
 
             FileOperation.Write_Result_In_File("FIFO", driver_obj)
 
         elif choice == 2: # To simulate Arbitrary message delivery
+            Node1.clear_ack()
+            Node2.clear_ack()
+            Node3.clear_ack()
+            Node4.clear_ack()
+            Node5.clear_ack()
+            Node6.clear_ack()
+
             Total_Send_Recv = 0
             Node5.clr_counter()
 
@@ -80,47 +92,53 @@ if __name__ == "__main__":
                     Total_Send_Recv += 1
             
             while(Node5.get_counter() < Total_Send_Recv):
-            	time.sleep(2)
-            	continue
+                time.sleep(2)
+                continue
 
             FileOperation.Write_Result_In_File("Arbitrary", driver_obj)
 
         elif choice == 3:
-        	Total_Send_Recv = 0 # To measure impact on Lamport's Mutual Exclusion Algorithm on FIFO channel
-        	Node5.clr_counter()
-
-        	with open("ME_Test.csv", "r") as inp:
-        		for Node in inp:
-        			node_mapping[Node.rstrip()].critical_section("FIFO")
-        			Total_Send_Recv += 1
-
-
-        	while(Node5.get_counter() < Total_Send_Recv):
-        		time.sleep(2)
-        		continue
-
-        	FileOperation.Write_Mutual_Exclusion_Result_In_File("FIFO", driver_obj)
             Node1.clear_ack()
             Node2.clear_ack()
             Node3.clear_ack()
             Node4.clear_ack()
             Node5.clear_ack()
             Node6.clear_ack()
-        	
-        	Total_Send_Recv = 0 # To measure impact on Lamport's Mutual Exclusion Algorithm on Arbitrary channel
+            Total_Send_Recv = 0 # To measure impact on Lamport's Mutual Exclusion Algorithm on FIFO channel
+            Node5.clr_counter()
+
+            with open("ME_Test.csv", "r") as inp:
+                for Node in inp:
+                    node_mapping[Node.rstrip()].critical_section("FIFO")
+                    Total_Send_Recv += 1
+
+
+            while(Node5.get_counter() < Total_Send_Recv):
+                time.sleep(2)
+                continue
+
+            FileOperation.Write_Mutual_Exclusion_Result_In_File("FIFO", driver_obj)
+            Node1.clear_ack()
+            Node2.clear_ack()
+            Node3.clear_ack()
+            Node4.clear_ack()
+            Node5.clear_ack()
+            Node6.clear_ack()
+
+            Total_Send_Recv = 0 # To measure impact on Lamport's Mutual Exclusion Algorithm on Arbitrary channel
             Node1.clr_counter()
 
 
-        	with open("ME_Test.csv", "r") as inp:
-        		for Node in inp:
-        			node_mapping[Node.rstrip()].critical_section("Arbitrary")
-        			Total_Send_Recv += 1
+            with open("ME_Test.csv", "r") as inp:
+                for Node in inp:
+                    node_mapping[Node.rstrip()].critical_section("Arbitrary")
+                    Total_Send_Recv += 1
 
-        	while(Node1.get_counter() < Total_Send_Recv):
-        		time.sleep(2)
-        		continue
+            while(Node1.get_counter() < Total_Send_Recv):
+                time.sleep(2)
+                continue
 
-        	FileOperation.Write_Mutual_Exclusion_Result_In_File("Arbitrary", driver_obj)
+            FileOperation.Write_Mutual_Exclusion_Result_In_File("Arbitrary", driver_obj)
 
         else:
             print("Wrong Input...")
